@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=no">
+  <title>Mathe-Quest: Vorrangregeln</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px 8px;
+      margin: 0;
+      user-select: none;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Musik-Panel */
+    .music-control-panel {
+      position: relative;
+      margin-bottom: 10px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      padding: 6px 12px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      z-index: 10;
+      max-width: 100%;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    @media (min-width: 768px) {
+      .music-control-panel {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        margin-bottom: 0;
+      }
+    }
+
+    .music-btn {
+      background: #334155;
+      border: none;
+      color: #f8fafc;
+      padding: 6px 10px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      touch-action: manipulation;
+    }
+
+    .music-btn:hover { background: #475569; }
+    .music-btn.active { background: #10b981; color: white; }
+
+    .music-select {
+      background: #0f172a;
+      color: #94a3b8;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+      max-width: 140px;
+    }
+    .music-select:focus { border-color: #38bdf8; color: #f8fafc; }
+    .music-select option:disabled { color: #475569; }
+
+    .volume-slider {
+      width: 50px;
+      height: 4px;
+      accent-color: #38bdf8;
+      cursor: pointer;
+    }
+
+    h1 {
+      margin: 10px 0 12px 0;
+      font-size: clamp(18px, 5vw, 26px);
+      background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-align: center;
+    }
+
+    @media (min-width: 768px) {
+      h1 { margin-top: 40px; }
+    }
+
+    /* Modi */
+    .mode-switch-container {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .mode-tab {
+      background: #1e293b;
+      border: 2px solid #334155;
+      color: #94a3b8;
+      padding: 6px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 800;
+      font-size: clamp(11px, 2.8vw, 13px);
+      transition: all 0.2s;
+      flex: 1 1 auto;
+      text-align: center;
+      touch-action: manipulation;
+    }
+
+    .mode-tab.active {
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      border-color: #38bdf8;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4);
+    }
+
+    .mode-tab.ranked-active {
+      background: linear-gradient(135deg, #b91c1c, #d97706);
+      border-color: #f59e0b;
+      color: #ffffff;
+      box-shadow: 0 4px 15px rgba(245, 158, 11, 0.5);
+      animation: pulseGlow 1.5s infinite alternate;
+    }
+
+    .mode-tab.timed-active {
+      background: linear-gradient(135deg, #059669, #0284c7);
+      border-color: #34d399;
+      color: #ffffff;
+      box-shadow: 0 4px 15px rgba(52, 211, 153, 0.4);
+    }
+
+    @keyframes pulseGlow {
+      from { box-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
+      to { box-shadow: 0 0 20px rgba(239, 68, 68, 0.8); }
+    }
+
+    /* Dashboard */
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(68px, 1fr));
+      gap: 6px;
+      margin-bottom: 12px;
+      width: 100%;
+      max-width: 650px;
+    }
+
+    .stat-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      padding: 6px 8px;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stat-label {
+      font-size: 9px;
+      text-transform: uppercase;
+      color: #94a3b8;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-align: center;
+    }
+
+    .stat-val {
+      font-size: clamp(14px, 4vw, 18px);
+      font-weight: 800;
+      color: #38bdf8;
+      white-space: nowrap;
+    }
+
+    .stat-val.multiplier { color: #f59e0b; }
+    .stat-val.timer { color: #34d399; font-variant-numeric: tabular-nums; }
+    .stat-val.timer.hurry { color: #ef4444; animation: shake 0.5s infinite; }
+
+    .xp-container {
+      width: 100%;
+      max-width: 650px;
+      background: #1e293b;
+      border-radius: 20px;
+      height: 8px;
+      overflow: hidden;
+      margin-bottom: 12px;
+      border: 1px solid #334155;
+    }
+
+    .xp-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981, #3b82f6, #a855f7);
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+
+    /* Schwierigkeiten */
+    .difficulty-selector {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+      max-width: 650px;
+    }
+
+    .diff-btn {
+      background: #1e293b;
+      border: 2px solid #334155;
+      color: #94a3b8;
+      padding: 5px 10px;
+      border-radius: 16px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: clamp(10px, 2.5vw, 12px);
+      transition: all 0.2s;
+      touch-action: manipulation;
+    }
+
+    .rule-btn {
+      border-color: #38bdf8;
+      color: #38bdf8;
+      background: #082f49;
+    }
+    .rule-btn:hover { background: #0284c7; color: #ffffff; }
+
+    .diff-btn.active[data-diff="easy"] { border-color: #34d399; color: #34d399; background: #064e3b; }
+    .diff-btn.active[data-diff="medium"] { border-color: #fbbf24; color: #fbbf24; background: #78350f; }
+    .diff-btn.active[data-diff="hard"] { border-color: #f87171; color: #f87171; background: #7f1d1d; }
+    .diff-btn.active[data-diff="platinum"] { border-color: #c084fc; color: #e9d5ff; background: #581c87; }
+
+    /* Spielfeld */
+    .game-area {
+      background: #1e293b;
+      padding: 16px 10px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+      border: 1px solid #334155;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 650px;
+      min-height: 150px;
+      justify-content: center;
+    }
+
+    .expression-row {
+      display: flex;
+      align-items: center;
+      gap: var(--node-gap, 6px);
+      min-height: 55px;
+      justify-content: center;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    .node {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--node-pad-y, 8px) var(--node-pad-x, 12px);
+      border-radius: var(--node-radius, 10px);
+      font-size: var(--node-size, 18px);
+      font-weight: 800;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      touch-action: manipulation;
+    }
+
+    .number {
+      background: #334155;
+      color: #f8fafc;
+      border: 2px solid #475569;
+    }
+
+    .operator {
+      background: #4f46e5;
+      color: #ffffff;
+      border: 2px solid #818cf8;
+      cursor: pointer;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    }
+
+    .operator:active {
+      transform: scale(0.95);
+    }
+
+    .bracket {
+      background: transparent;
+      color: #94a3b8;
+      font-size: calc(var(--node-size, 18px) * 1.25);
+      padding: 0 var(--bracket-pad, 2px);
+    }
+
+    .feedback-box {
+      margin-top: 12px;
+      min-height: 20px;
+      font-size: clamp(12px, 3.5vw, 14px);
+      font-weight: 600;
+      text-align: center;
+      padding: 0 8px;
+    }
+    .fb-error { color: #f87171; }
+    .fb-success { color: #4ade80; }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-4px); }
+      40%, 80% { transform: translateX(4px); }
+    }
+    .shake {
+      animation: shake 0.4s ease;
+      background: #ef4444 !important;
+      border-color: #f87171 !important;
+    }
+
+    @keyframes mergePulse {
+      0% { transform: scale(0.7); opacity: 0.5; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .merged {
+      animation: mergePulse 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      background: #059669;
+      border-color: #34d399;
+      color: white;
+    }
+
+    /* Buttons */
+    .controls-container {
+      margin-top: 15px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+      max-width: 650px;
+    }
+
+    .action-btn {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: clamp(13px, 3.5vw, 15px);
+      font-weight: 700;
+      border-radius: 25px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+      transition: all 0.2s;
+      flex: 1 1 180px;
+      text-align: center;
+      touch-action: manipulation;
+    }
+
+    .action-btn:active { transform: translateY(1px); }
+
+    .reset-btn {
+      background: transparent;
+      border: 1px solid #475569;
+      color: #94a3b8;
+      padding: 8px 14px;
+      font-size: clamp(11px, 3vw, 13px);
+      font-weight: 600;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      touch-action: manipulation;
+    }
+
+    .reset-btn:hover {
+      background: #ef4444;
+      color: white;
+      border-color: #ef4444;
+    }
+
+    #confetti-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(4px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 200;
+      padding: 15px;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal-card {
+      background: #1e293b;
+      border: 1px solid #475569;
+      padding: 18px;
+      border-radius: 16px;
+      max-width: 440px;
+      width: 100%;
+      color: #e2e8f0;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      line-height: 1.5;
+    }
+
+    .modal-card h2 {
+      margin-top: 0;
+      color: #38bdf8;
+      font-size: 18px;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    .rule-step {
+      margin-bottom: 10px;
+      padding: 10px 12px;
+      background: #0f172a;
+      border-left: 4px solid #38bdf8;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #f8fafc;
+    }
+
+    .modal-close-btn {
+      margin-top: 12px;
+      width: 100%;
+      background: #38bdf8;
+      color: #0f172a;
+      border: none;
+      padding: 10px 14px;
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.2s;
+      touch-action: manipulation;
+    }
+
+    .score-summary-box {
+      background: #0f172a;
+      border-radius: 10px;
+      padding: 12px;
+      margin: 12px 0;
+      text-align: center;
+    }
+    .score-summary-number {
+      font-size: 32px;
+      font-weight: 800;
+      color: #38bdf8;
+      margin: 4px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="music-control-panel">
+    <button class="music-btn" id="music-toggle-btn" onclick="MusicEngine.toggle()" title="Musik An/Aus">▶️</button>
+    <select class="music-select" id="music-track-select" onchange="MusicEngine.changeTrack(this.value)">
+      <option value="arcade">🕹️ Arcade</option>
+      <option value="boss">⚔️ Boss</option>
+      <option value="synth">🎲 Synth</option>
+      <option value="lofi">🌌 Chill</option>
+      <option value="hardcore" id="hardcore-option" disabled>🔒 ⚡ Hardcore</option>
+    </select>
+    <input type="range" class="volume-slider" min="0" max="1" step="0.05" value="0.3" oninput="MusicEngine.setVolume(this.value)" title="Lautstärke">
+  </div>
+
+  <canvas id="confetti-canvas"></canvas>
+
+  <h1>⚡ Mathe-Quest</h1>
+
+  <!-- Modus-Umschaltung -->
+  <div class="mode-switch-container">
+    <button class="mode-tab active" id="tab-free" onclick="switchGameMode('free')">🎮 Training</button>
+    <button class="mode-tab" id="tab-timed" onclick="switchGameMode('timed')">⏱️ 2 Min</button>
+    <button class="mode-tab" id="tab-ranked" onclick="switchGameMode('ranked')">🏆 Rangliste</button>
+  </div>
+
+  <div class="dashboard">
+    <div class="stat-card" id="card-level">
+      <span class="stat-label">Level</span>
+      <span class="stat-val" id="level-display">1</span>
+    </div>
+    <div class="stat-card" id="card-timer" style="display: none;">
+      <span class="stat-label">Zeit</span>
+      <span class="stat-val timer" id="timer-display">02:00</span>
+    </div>
+    <div class="stat-card" id="card-lives" style="display: none;">
+      <span class="stat-label">Leben</span>
+      <span class="stat-val" id="lives-display">❤️❤️❤️</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Punkte</span>
+      <span class="stat-val" id="score-display">0</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Multi</span>
+      <span class="stat-val multiplier" id="multi-display">1x</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Streak</span>
+      <span class="stat-val" id="streak-display">🔥 0</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label" id="record-label">Rekord</span>
+      <span class="stat-val" id="best-display">🏆 0</span>
+    </div>
+  </div>
+
+  <div class="xp-container" id="xp-wrapper" title="Fortschritt zum nächsten Level">
+    <div class="xp-bar" id="xp-bar"></div>
+  </div>
+
+  <div class="difficulty-selector" id="diff-container">
+    <button class="diff-btn rule-btn" onclick="toggleRulesModal(true)">📖 Regeln</button>
+    <button class="diff-btn active" data-diff="easy" onclick="setDifficulty('easy')">🟢 Bronze</button>
+    <button class="diff-btn" data-diff="medium" onclick="setDifficulty('medium')">🟡 Silber</button>
+    <button class="diff-btn" data-diff="hard" onclick="setDifficulty('hard')">🔴 Gold</button>
+    <button class="diff-btn" data-diff="platinum" onclick="setDifficulty('platinum')">🟣 Platin</button>
+  </div>
+
+  <div class="game-area">
+    <div class="expression-row" id="term-container"></div>
+    <div class="feedback-box" id="feedback"></div>
+  </div>
+
+  <div class="controls-container">
+    <button class="action-btn" id="next-task-btn" onclick="generateRandomTask()">🎲 Nächste Aufgabe</button>
+    <button class="reset-btn" onclick="resetStats()">🔄 Reset</button>
+  </div>
+
+  <!-- Modal: Die 3 Vorrangregeln -->
+  <div class="modal-overlay" id="rules-modal" onclick="if(event.target===this) toggleRulesModal(false)">
+    <div class="modal-card">
+      <h2>📌 Die 3 Vorrangregeln</h2>
+      <div class="rule-step">
+        1. Klammern zuerst.<br>
+        <span style="font-size: 11px; font-weight: normal; color: #94a3b8;">Von innen nach außen rechnen.</span>
+      </div>
+      <div class="rule-step">
+        2. Punkt- vor Strichrechnung.
+      </div>
+      <div class="rule-step">
+        3. Rechne von links nach rechts.
+      </div>
+      <button class="modal-close-btn" onclick="toggleRulesModal(false)">Alles klar! 👍</button>
+    </div>
+  </div>
+
+  <!-- Modal: Zeitmodus Ergebnis -->
+  <div class="modal-overlay" id="timeup-modal">
+    <div class="modal-card">
+      <h2>⏱️ Zeit abgelaufen!</h2>
+      <p style="text-align: center; color: #94a3b8; font-size: 13px;">Deine 2 Minuten sind vorbei.</p>
+      
+      <div class="score-summary-box">
+        <div style="font-size: 11px; text-transform: uppercase; color: #94a3b8; font-weight: 700;">Gesamtpunktzahl</div>
+        <div class="score-summary-number" id="summary-final-score">0</div>
+        <div style="font-size: 12px; color: #cbd5e1;" id="summary-details">Gelöste Aufgaben: 0 • Höchster Streak: 0</div>
+      </div>
+
+      <button class="modal-close-btn" onclick="closeTimeUpModal()">Erneut spielen 🔁</button>
+    </div>
+  </div>
+
+  <script>
+    function toggleRulesModal(show) {
+      const modal = document.getElementById('rules-modal');
+      if (show) modal.classList.add('open');
+      else modal.classList.remove('open');
+    }
+
+    function showTimeUpModal(score, tasks, maxStreak) {
+      document.getElementById('summary-final-score').innerText = `${score} Pkt`;
+      document.getElementById('summary-details').innerText = `Gelöste Aufgaben: ${tasks} • Bester Streak: 🔥 ${maxStreak}`;
+      document.getElementById('timeup-modal').classList.add('open');
+    }
+
+    function closeTimeUpModal() {
+      document.getElementById('timeup-modal').classList.remove('open');
+      startTimedRun();
+    }
+
+    let sharedAudioCtx = null;
+    function getAudioContext() {
+      if (!sharedAudioCtx) {
+        sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (sharedAudioCtx.state === 'suspended') {
+        sharedAudioCtx.resume();
+      }
+      return sharedAudioCtx;
+    }
+
+    const AudioEngine = {
+      playSuccess() {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.2);
+      },
+      playError() {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(180, now);
+        osc.frequency.linearRampToValueAtTime(110, now + 0.25);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.25);
+      },
+      playWin() {
+        const ctx = getAudioContext();
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          const now = ctx.currentTime + (idx * 0.08);
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.25);
+        });
+      }
+    };
+
+    const MusicEngine = {
+      isPlaying: false,
+      currentTrack: 'arcade',
+      volume: 0.3,
+      masterGain: null,
+      timerId: null,
+      step: 0,
+
+      tracks: {
+        hardcore: {
+          bpm: 175,
+          type: 'sawtooth',
+          notes: [130.81, 261.63, 196.00, 392.00, 155.56, 311.13, 233.08, 466.16, 116.54, 233.08, 174.61, 349.23, 146.83, 293.66, 220.00, 440.00]
+        },
+        arcade: {
+          bpm: 130,
+          type: 'square',
+          notes: [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 392.00, 329.63, 293.66, 329.63, 392.00, 523.25, 440.00, 392.00, 329.63, 293.66]
+        },
+        boss: {
+          bpm: 155,
+          type: 'sawtooth',
+          notes: [130.81, 155.56, 174.61, 196.00, 233.08, 196.00, 174.61, 155.56, 130.81, 130.81, 261.63, 196.00, 155.56, 174.61, 196.00, 233.08]
+        },
+        synth: {
+          bpm: 115,
+          type: 'triangle',
+          notes: [220.00, 261.63, 329.63, 440.00, 329.63, 261.63, 174.61, 220.00, 261.63, 349.23, 261.63, 220.00]
+        },
+        lofi: {
+          bpm: 80,
+          type: 'sine',
+          notes: [196.00, 246.94, 293.66, 369.99, 293.66, 246.94, 220.00, 277.18, 329.63, 440.00, 329.63, 277.18]
+        }
+      },
+
+      init() {
+        const ctx = getAudioContext();
+        if (!this.masterGain) {
+          this.masterGain = ctx.createGain();
+          this.masterGain.gain.value = this.volume;
+          this.masterGain.connect(ctx.destination);
+        }
+      },
+
+      toggle() {
+        this.init();
+        const btn = document.getElementById('music-toggle-btn');
+        if (this.isPlaying) {
+          this.stop();
+          btn.innerText = '▶️';
+          btn.classList.remove('active');
+        } else {
+          this.start();
+          btn.innerText = '⏸️';
+          btn.classList.add('active');
+        }
+      },
+
+      start() {
+        this.isPlaying = true;
+        this.step = 0;
+        this.scheduleNextNote();
+      },
+
+      stop() {
+        this.isPlaying = false;
+        if (this.timerId) {
+          clearTimeout(this.timerId);
+          this.timerId = null;
+        }
+      },
+
+      changeTrack(trackName) {
+        if (trackName === 'hardcore' && gameMode !== 'ranked') {
+          trackName = 'arcade';
+        }
+
+        this.currentTrack = trackName;
+        document.getElementById('music-track-select').value = trackName;
+        if (this.isPlaying) {
+          this.stop();
+          this.start();
+        }
+      },
+
+      setVolume(val) {
+        this.volume = parseFloat(val);
+        if (this.masterGain) {
+          this.masterGain.gain.setValueAtTime(this.volume, getAudioContext().currentTime);
+        }
+      },
+
+      scheduleNextNote() {
+        if (!this.isPlaying) return;
+        const ctx = getAudioContext();
+        const track = this.tracks[this.currentTrack];
+        const freq = track.notes[this.step % track.notes.length];
+        const noteDuration = (60 / track.bpm) * 0.5;
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = track.type;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+
+        const baseGain = (this.currentTrack === 'hardcore') ? 0.12 : 0.08;
+        gain.gain.setValueAtTime(baseGain, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + noteDuration);
+
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + noteDuration);
+
+        this.step++;
+        const intervalMs = (60 / track.bpm) * 500;
+        this.timerId = setTimeout(() => this.scheduleNextNote(), intervalMs);
+      }
+    };
+
+    const DIFFICULTY_CONFIG = {
+      easy: { stepPoints: 5, finishBonus: 20, xp: 25 },
+      medium: { stepPoints: 10, finishBonus: 40, xp: 45 },
+      hard: { stepPoints: 20, finishBonus: 80, xp: 75 },
+      platinum: { stepPoints: 35, finishBonus: 140, xp: 120 }
+    };
+
+    let gameMode = 'free';
+    let currentTokens = [];
+    let lastMergedIndex = null;
+    let hadErrorInCurrentTask = false;
+    let currentDifficulty = 'easy';
+
+    let freeScore = parseInt(localStorage.getItem('mq_score')) || 0;
+    let freeStreak = 0;
+    let freeBestStreak = parseInt(localStorage.getItem('mq_best_streak')) || 0;
+    let level = parseInt(localStorage.getItem('mq_level')) || 1;
+    let currentXP = parseInt(localStorage.getItem('mq_xp')) || 0;
+
+    let rankedScore = 0;
+    let rankedStreak = 0;
+    let rankedLives = 3;
+    let rankedTasksSolved = 0;
+    let rankedBestScore = parseInt(localStorage.getItem('mq_ranked_best')) || 0;
+
+    let timedScore = 0;
+    let timedStreak = 0;
+    let timedMaxStreak = 0;
+    let timedTasksSolved = 0;
+    let timedTimeLeft = 120;
+    let timedInterval = null;
+    let timedBestScore = parseInt(localStorage.getItem('mq_timed_best')) || 0;
+
+    const XP_PER_LEVEL = 100;
+    const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+    const choice = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+    function getMultiplier() {
+      let activeStreak = freeStreak;
+      if (gameMode === 'ranked') activeStreak = rankedStreak;
+      if (gameMode === 'timed') activeStreak = timedStreak;
+
+      if (activeStreak >= 12) return 5;
+      if (activeStreak >= 8) return 4;
+      if (activeStreak >= 5) return 3;
+      if (activeStreak >= 2) return 2;
+      return 1;
+    }
+
+    function switchGameMode(mode) {
+      if (timedInterval) {
+        clearInterval(timedInterval);
+        timedInterval = null;
+      }
+
+      gameMode = mode;
+      const tabFree = document.getElementById('tab-free');
+      const tabRanked = document.getElementById('tab-ranked');
+      const tabTimed = document.getElementById('tab-timed');
+
+      const diffContainer = document.getElementById('diff-container');
+      const levelCard = document.getElementById('card-level');
+      const livesCard = document.getElementById('card-lives');
+      const timerCard = document.getElementById('card-timer');
+      const xpWrapper = document.getElementById('xp-wrapper');
+      const recordLabel = document.getElementById('record-label');
+      const hardcoreOption = document.getElementById('hardcore-option');
+
+      tabFree.className = 'mode-tab' + (mode === 'free' ? ' active' : '');
+      tabRanked.className = 'mode-tab' + (mode === 'ranked' ? ' ranked-active' : '');
+      tabTimed.className = 'mode-tab' + (mode === 'timed' ? ' timed-active' : '');
+
+      if (mode === 'ranked') {
+        diffContainer.style.display = 'none';
+        levelCard.style.display = 'none';
+        timerCard.style.display = 'none';
+        xpWrapper.style.display = 'none';
+        livesCard.style.display = 'flex';
+        recordLabel.innerText = "Highscore";
+
+        rankedScore = 0;
+        rankedStreak = 0;
+        rankedLives = 3;
+        rankedTasksSolved = 0;
+        currentDifficulty = 'easy';
+
+        hardcoreOption.disabled = false;
+        hardcoreOption.innerText = "⚡ Hardcore";
+        MusicEngine.changeTrack('hardcore');
+        if (!MusicEngine.isPlaying) MusicEngine.toggle();
+        setFeedback("⚔️ Rangliste gestartet! 3 Leben.", "fb-success");
+      } else if (mode === 'timed') {
+        hardcoreOption.disabled = true;
+        hardcoreOption.innerText = "🔒 ⚡ Hardcore";
+
+        diffContainer.style.display = 'none';
+        levelCard.style.display = 'none';
+        livesCard.style.display = 'none';
+        xpWrapper.style.display = 'none';
+        timerCard.style.display = 'flex';
+        recordLabel.innerText = "Rekord";
+
+        MusicEngine.changeTrack('boss');
+        if (!MusicEngine.isPlaying) MusicEngine.toggle();
+        startTimedRun();
+        return;
+      } else {
+        hardcoreOption.disabled = true;
+        hardcoreOption.innerText = "🔒 ⚡ Hardcore";
+
+        diffContainer.style.display = 'flex';
+        levelCard.style.display = 'flex';
+        timerCard.style.display = 'none';
+        livesCard.style.display = 'none';
+        xpWrapper.style.display = 'block';
+        recordLabel.innerText = "Rekord";
+
+        if (MusicEngine.currentTrack === 'hardcore') {
+          MusicEngine.changeTrack('arcade');
+        }
+      }
+
+      updateStatsDisplay();
+      generateRandomTask();
+    }
+
+    function startTimedRun() {
+      if (timedInterval) clearInterval(timedInterval);
+
+      timedScore = 0;
+      timedStreak = 0;
+      timedMaxStreak = 0;
+      timedTasksSolved = 0;
+      timedTimeLeft = 120;
+      currentDifficulty = 'easy';
+
+      updateStatsDisplay();
+      setFeedback("⏱️ 2 Minuten laufen!", "fb-success");
+      generateRandomTask();
+
+      timedInterval = setInterval(() => {
+        timedTimeLeft--;
+        updateStatsDisplay();
+
+        if (timedTimeLeft <= 0) {
+          clearInterval(timedInterval);
+          timedInterval = null;
+          AudioEngine.playWin();
+          launchConfetti();
+          showTimeUpModal(timedScore, timedTasksSolved, timedMaxStreak);
+        }
+      }, 1000);
+    }
+
+    function updateStatsDisplay() {
+      const multi = getMultiplier();
+      document.getElementById('multi-display').innerText = `${multi}x`;
+
+      if (gameMode === 'ranked') {
+        document.getElementById('score-display').innerText = rankedScore;
+        document.getElementById('streak-display').innerText = `🔥 ${rankedStreak}`;
+        document.getElementById('best-display').innerText = `🏆 ${rankedBestScore}`;
+        document.getElementById('lives-display').innerText = "❤️".repeat(Math.max(0, rankedLives));
+      } else if (gameMode === 'timed') {
+        document.getElementById('score-display').innerText = timedScore;
+        document.getElementById('streak-display').innerText = `🔥 ${timedStreak}`;
+        document.getElementById('best-display').innerText = `🏆 ${timedBestScore}`;
+
+        const mins = String(Math.floor(timedTimeLeft / 60)).padStart(2, '0');
+        const secs = String(timedTimeLeft % 60).padStart(2, '0');
+        const timerElem = document.getElementById('timer-display');
+        timerElem.innerText = `${mins}:${secs}`;
+        if (timedTimeLeft <= 20) timerElem.classList.add('hurry');
+        else timerElem.classList.remove('hurry');
+      } else {
+        document.getElementById('score-display').innerText = freeScore;
+        document.getElementById('streak-display').innerText = `🔥 ${freeStreak}`;
+        document.getElementById('best-display').innerText = `🏆 ${freeBestStreak}`;
+        document.getElementById('level-display').innerText = level;
+
+        const xpPercent = Math.min(100, Math.floor((currentXP / XP_PER_LEVEL) * 100));
+        document.getElementById('xp-bar').style.width = `${xpPercent}%`;
+
+        localStorage.setItem('mq_score', freeScore);
+        localStorage.setItem('mq_best_streak', freeBestStreak);
+        localStorage.setItem('mq_level', level);
+        localStorage.setItem('mq_xp', currentXP);
+      }
+    }
+
+    function addPointsAndXP(stepPoints, isTaskFinish = false) {
+      const multi = getMultiplier();
+      const pointsGained = stepPoints * multi;
+
+      if (gameMode === 'ranked') {
+        rankedScore += pointsGained;
+        if (rankedScore > rankedBestScore) {
+          rankedBestScore = rankedScore;
+          localStorage.setItem('mq_ranked_best', rankedBestScore);
+        }
+      } else if (gameMode === 'timed') {
+        timedScore += pointsGained;
+        if (timedScore > timedBestScore) {
+          timedBestScore = timedScore;
+          localStorage.setItem('mq_timed_best', timedBestScore);
+        }
+      } else {
+        freeScore += pointsGained;
+        currentXP += Math.floor(pointsGained / 2);
+        if (currentXP >= XP_PER_LEVEL) {
+          currentXP -= XP_PER_LEVEL;
+          level++;
+          setFeedback(`⚡ LEVEL UP! Level ${level}!`, "fb-success");
+        }
+      }
+      updateStatsDisplay();
+      return pointsGained;
+    }
+
+    function setDifficulty(diff) {
+      if (gameMode !== 'free') return;
+      currentDifficulty = diff;
+      document.querySelectorAll('.diff-btn').forEach(btn => {
+        if (btn.hasAttribute('data-diff')) {
+          btn.classList.toggle('active', btn.getAttribute('data-diff') === diff);
+        }
+      });
+      generateRandomTask();
+    }
+
+    function resetStats() {
+      const confirmReset = confirm("Möchtest du alle Spielstände und Highscores komplett zurücksetzen?");
+      if (confirmReset) {
+        freeScore = 0;
+        freeStreak = 0;
+        freeBestStreak = 0;
+        level = 1;
+        currentXP = 0;
+        rankedScore = 0;
+        rankedStreak = 0;
+        rankedLives = 3;
+        rankedBestScore = 0;
+        timedBestScore = 0;
+        localStorage.clear();
+        updateStatsDisplay();
+        setFeedback("Spielstand zurückgesetzt!", "");
+        generateRandomTask();
+      }
+    }
+
+    function updateDynamicSizes() {
+      const container = document.getElementById('term-container');
+      const count = currentTokens.length;
+      const isMobile = window.innerWidth < 600;
+
+      if (count > 15) {
+        container.style.setProperty('--node-size', isMobile ? '13px' : '15px');
+        container.style.setProperty('--node-pad-y', '4px');
+        container.style.setProperty('--node-pad-x', isMobile ? '5px' : '8px');
+        container.style.setProperty('--node-gap', '3px');
+        container.style.setProperty('--bracket-pad', '1px');
+        container.style.setProperty('--node-radius', '6px');
+      } else if (count > 11) {
+        container.style.setProperty('--node-size', isMobile ? '15px' : '18px');
+        container.style.setProperty('--node-pad-y', '6px');
+        container.style.setProperty('--node-pad-x', isMobile ? '7px' : '11px');
+        container.style.setProperty('--node-gap', '4px');
+        container.style.setProperty('--bracket-pad', '1px');
+        container.style.setProperty('--node-radius', '8px');
+      } else if (count > 7) {
+        container.style.setProperty('--node-size', isMobile ? '17px' : '21px');
+        container.style.setProperty('--node-pad-y', '7px');
+        container.style.setProperty('--node-pad-x', isMobile ? '9px' : '14px');
+        container.style.setProperty('--node-gap', '5px');
+        container.style.setProperty('--bracket-pad', '2px');
+        container.style.setProperty('--node-radius', '10px');
+      } else {
+        container.style.setProperty('--node-size', isMobile ? '20px' : '25px');
+        container.style.setProperty('--node-pad-y', isMobile ? '8px' : '12px');
+        container.style.setProperty('--node-pad-x', isMobile ? '12px' : '18px');
+        container.style.setProperty('--node-gap', '7px');
+        container.style.setProperty('--bracket-pad', '3px');
+        container.style.setProperty('--node-radius', '12px');
+      }
+    }
+
+    function createLeaf() {
+      return { type: 'num', val: rand(2, 9) };
+    }
+
+    function buildMathTree(depth, allowedOps, allowBrackets, maxDepth) {
+      if (depth <= 0) return createLeaf();
+
+      const op = choice(allowedOps);
+      const prio = (op === '•' || op === ':') ? 2 : 1;
+
+      let left = buildMathTree(depth - 1, allowedOps, allowBrackets, maxDepth);
+      let right = buildMathTree(depth - 1, allowedOps, allowBrackets, maxDepth);
+
+      let leftVal = evaluateTree(left);
+      let rightVal = evaluateTree(right);
+
+      if (op === ':') {
+        const divisor = Math.max(2, rightVal > 10 ? rand(2, 5) : rightVal);
+        const quotient = rand(2, 6);
+        left = { type: 'num', val: divisor * quotient };
+        right = { type: 'num', val: divisor };
+        leftVal = divisor * quotient;
+        rightVal = divisor;
+      }
+
+      if (op === '-' && leftVal < rightVal) {
+        const temp = left;
+        left = right;
+        right = temp;
+      }
+
+      const node = {
+        type: 'op_node',
+        op: op,
+        prio: prio,
+        left: left,
+        right: right,
+        bracket: false
+      };
+
+      if (allowBrackets && depth < maxDepth) {
+        if (Math.random() < 0.65) node.bracket = true;
+      }
+
+      return node;
+    }
+
+    function evaluateTree(node) {
+      if (node.type === 'num') return node.val;
+      const l = evaluateTree(node.left);
+      const r = evaluateTree(node.right);
+      switch(node.op) {
+        case '+': return l + r;
+        case '-': return l - r;
+        case '•': return l * r;
+        case ':': return Math.floor(l / r);
+      }
+      return 1;
+    }
+
+    function flattenTree(node, forceOuterBracket = false) {
+      const isBracketed = node.bracket || forceOuterBracket;
+      let res = [];
+
+      if (isBracketed) res.push({ type: 'op', val: '(', isBracket: true });
+
+      if (node.type === 'num') {
+        res.push({ type: 'num', val: node.val });
+      } else {
+        res = res.concat(flattenTree(node.left));
+        res.push({ type: 'op', val: node.op, prio: node.prio });
+        res = res.concat(flattenTree(node.right));
+      }
+
+      if (isBracketed) res.push({ type: 'op', val: ')', isBracket: true });
+      return res;
+    }
+
+    function generateRandomTask() {
+      if (gameMode === 'ranked' && rankedLives <= 0) {
+        rankedLives = 3;
+        rankedScore = 0;
+        rankedStreak = 0;
+        rankedTasksSolved = 0;
+        currentDifficulty = 'easy';
+        updateStatsDisplay();
+      }
+
+      if (gameMode === 'ranked') {
+        if (rankedTasksSolved >= 9) currentDifficulty = 'platinum';
+        else if (rankedTasksSolved >= 5) currentDifficulty = 'hard';
+        else if (rankedTasksSolved >= 2) currentDifficulty = 'medium';
+        else currentDifficulty = 'easy';
+      } else if (gameMode === 'timed') {
+        if (timedTasksSolved >= 9) currentDifficulty = 'platinum';
+        else if (timedTasksSolved >= 5) currentDifficulty = 'hard';
+        else if (timedTasksSolved >= 2) currentDifficulty = 'medium';
+        else currentDifficulty = 'easy';
+      }
+
+      hadErrorInCurrentTask = false;
+      let tokens = [];
+
+      if (currentDifficulty === 'easy') {
+        let tree = buildMathTree(2, ['+', '-', '•'], false, 2);
+        tokens = flattenTree(tree, false);
+      } 
+      else if (currentDifficulty === 'medium') {
+        const tree = buildMathTree(2, ['+', '-', '•'], true, 2);
+        tokens = flattenTree(tree, false);
+        if (!tokens.some(t => t.isBracket) && tokens.length >= 5) {
+          tokens.splice(2, 0, { type: 'op', val: '(', isBracket: true });
+          tokens.push({ type: 'op', val: ')', isBracket: true });
+        }
+      } 
+      else if (currentDifficulty === 'hard') {
+        const tree = buildMathTree(3, ['+', '-', '•', ':'], true, 3);
+        tokens = flattenTree(tree, false);
+      } 
+      else {
+        const treeA = buildMathTree(2, ['+', '-', '•', ':'], true, 2);
+        const treeB = buildMathTree(2, ['+', '-', '•', ':'], true, 2);
+        const rootOp = choice(['+', '-', '•']);
+        const platinTree = {
+          type: 'op_node',
+          op: rootOp,
+          prio: (rootOp === '•') ? 2 : 1,
+          left: treeA,
+          right: treeB,
+          bracket: false
+        };
+        treeA.bracket = true;
+        treeB.bracket = true;
+        tokens = flattenTree(platinTree, false);
+      }
+
+      if (tokens[0].val === '(' && tokens[tokens.length - 1].val === ')') {
+        let depth = 0;
+        let closesAtEnd = true;
+        for (let i = 0; i < tokens.length - 1; i++) {
+          if (tokens[i].val === '(') depth++;
+          if (tokens[i].val === ')') depth--;
+          if (depth === 0) { closesAtEnd = false; break; }
+        }
+        if (closesAtEnd) { tokens.shift(); tokens.pop(); }
+      }
+
+      currentTokens = tokens;
+      lastMergedIndex = null;
+      setFeedback("Tippe auf das richtige Rechenzeichen!", "");
+      render();
+    }
+
+    function render() {
+      updateDynamicSizes();
+      const container = document.getElementById('term-container');
+      container.innerHTML = '';
+
+      if (currentTokens.length === 1 && currentTokens[0].type === 'num') {
+        if (!hadErrorInCurrentTask) {
+          if (gameMode === 'ranked') {
+            rankedStreak++;
+            rankedTasksSolved++;
+          } else if (gameMode === 'timed') {
+            timedStreak++;
+            timedTasksSolved++;
+            if (timedStreak > timedMaxStreak) timedMaxStreak = timedStreak;
+          } else {
+            freeStreak++;
+            if (freeStreak > freeBestStreak) freeBestStreak = freeStreak;
+          }
+
+          const bonus = DIFFICULTY_CONFIG[currentDifficulty].finishBonus;
+          const pts = addPointsAndXP(bonus, true);
+          AudioEngine.playWin();
+          launchConfetti();
+          setFeedback(`Gelöst! +${pts} Punkte 🎉`, "fb-success");
+
+          if (gameMode === 'timed' && timedTimeLeft > 0) {
+            setTimeout(() => generateRandomTask(), 600);
+          }
+        } else {
+          setFeedback(`Gelöst! Ergebnis: ${currentTokens[0].val}`, "fb-success");
+        }
+      }
+
+      currentTokens.forEach((token, idx) => {
+        const div = document.createElement('div');
+        div.className = token.isBracket ? 'node bracket' : `node ${token.type === 'num' ? 'number' : 'operator'}`;
+        div.innerText = token.val;
+
+        if (idx === lastMergedIndex) div.classList.add('merged');
+        if (token.type === 'op' && !token.isBracket) {
+          div.onclick = () => handleOperatorClick(idx);
+        }
+        container.appendChild(div);
+      });
+    }
+
+    function getImmediateScope(tokens, opIdx) {
+      let depth = 0;
+      let start = 0;
+      for (let i = opIdx - 1; i >= 0; i--) {
+        if (tokens[i].val === ')') depth++;
+        else if (tokens[i].val === '(') {
+          if (depth === 0) {
+            start = i + 1;
+            break;
+          }
+          depth--;
+        }
+      }
+
+      depth = 0;
+      let end = tokens.length - 1;
+      for (let i = opIdx + 1; i < tokens.length; i++) {
+        if (tokens[i].val === '(') depth++;
+        else if (tokens[i].val === ')') {
+          if (depth === 0) {
+            end = i - 1;
+            break;
+          }
+          depth--;
+        }
+      }
+
+      return { start, end };
+    }
+
+    function handleOperatorClick(opIdx) {
+      if (gameMode === 'ranked' && rankedLives <= 0) return;
+      if (gameMode === 'timed' && timedTimeLeft <= 0) return;
+
+      const targetToken = currentTokens[opIdx];
+      const leftNeighbor = currentTokens[opIdx - 1];
+      const rightNeighbor = currentTokens[opIdx + 1];
+
+      if (!leftNeighbor || leftNeighbor.type !== 'num' || !rightNeighbor || rightNeighbor.type !== 'num') {
+        showError(opIdx, "Klammern innerhalb dieser Rechnung müssen zuerst gelöst werden!");
+        return;
+      }
+
+      const { start, end } = getImmediateScope(currentTokens, opIdx);
+
+      // Regel 1: Innere Klammern zuerst
+      let hasInnerBrackets = false;
+      for (let i = start; i <= end; i++) {
+        if (currentTokens[i].isBracket) {
+          hasInnerBrackets = true;
+          break;
+        }
+      }
+
+      if (hasInnerBrackets) {
+        showError(opIdx, "Bei mehreren Klammern rechnest du von innen nach außen!");
+        return;
+      }
+
+      // Regel 2: Punkt vor Strich
+      let maxPrioInScope = -1;
+      for (let i = start; i <= end; i++) {
+        const t = currentTokens[i];
+        if (t.type === 'op' && !t.isBracket) {
+          if (t.prio > maxPrioInScope) maxPrioInScope = t.prio;
+        }
+      }
+
+      if (targetToken.prio < maxPrioInScope) {
+        showError(opIdx, "Punkt- vor Strichrechnung!");
+        return;
+      }
+
+      // Regel 3: Links nach Rechts
+      let leftConflict = false;
+      for (let i = opIdx - 1; i >= start; i--) {
+        const t = currentTokens[i];
+        if (t.type === 'op' && !t.isBracket) {
+          if (t.prio === targetToken.prio) {
+            const isPureAddition = (t.val === '+' && targetToken.val === '+');
+            const isPureMultiplication = (t.val === '•' && targetToken.val === '•');
+            if (!isPureAddition && !isPureMultiplication) {
+              leftConflict = true;
+            }
+          }
+          break;
+        }
+      }
+
+      if (leftConflict) {
+        showError(opIdx, "Rechne von links nach rechts!");
+        return;
+      }
+
+      AudioEngine.playSuccess();
+      const basePoints = DIFFICULTY_CONFIG[currentDifficulty].stepPoints;
+      const pts = addPointsAndXP(basePoints, false);
+
+      const leftNum = leftNeighbor.val;
+      const rightNum = rightNeighbor.val;
+      let result = 0;
+
+      switch(targetToken.val) {
+        case '+': result = leftNum + rightNum; break;
+        case '-': result = leftNum - rightNum; break;
+        case '•': result = leftNum * rightNum; break;
+        case ':': result = Math.floor(leftNum / rightNum); break;
+      }
+
+      currentTokens.splice(opIdx - 1, 3, { type: 'num', val: result });
+
+      let clean = true;
+      while (clean) {
+        clean = false;
+        for (let i = 0; i < currentTokens.length - 2; i++) {
+          if (currentTokens[i].val === '(' && currentTokens[i+1].type === 'num' && currentTokens[i+2].val === ')') {
+            const innerNum = currentTokens[i+1].val;
+            currentTokens.splice(i, 3, { type: 'num', val: innerNum });
+            clean = true;
+            break;
+          }
+        }
+      }
+
+      lastMergedIndex = opIdx - 1;
+      setFeedback(`Richtig! +${pts} Pkt (${getMultiplier()}x)`, "fb-success");
+      render();
+    }
+
+    function showError(idx, msg) {
+      AudioEngine.playError();
+      hadErrorInCurrentTask = true;
+
+      if (gameMode === 'ranked') {
+        rankedStreak = 0;
+        rankedLives--;
+        if (rankedLives <= 0) {
+          setFeedback(`💀 GAME OVER! Endstand: ${rankedScore} Pkt.`, "fb-error");
+        } else {
+          setFeedback(`${msg} (❤️ -1)`, "fb-error");
+        }
+      } else if (gameMode === 'timed') {
+        timedStreak = 0;
+        setFeedback(`${msg} (Streak Reset)`, "fb-error");
+      } else {
+        freeStreak = 0;
+        setFeedback(`${msg} (Streak Reset)`, "fb-error");
+      }
+
+      updateStatsDisplay();
+
+      const nodes = document.getElementById('term-container').children;
+      if (nodes[idx]) {
+        nodes[idx].classList.remove('shake');
+        void nodes[idx].offsetWidth;
+        nodes[idx].classList.add('shake');
+      }
+    }
+
+    function setFeedback(text, className) {
+      const fb = document.getElementById('feedback');
+      fb.innerText = text;
+      fb.className = `feedback-box ${className}`;
+    }
+
+    function launchConfetti() {
+      const canvas = document.getElementById('confetti-canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const particles = [];
+      const colors = ['#38bdf8', '#818cf8', '#34d399', '#f472b6', '#fbbf24', '#c084fc'];
+
+      for (let i = 0; i < 45; i++) {
+        particles.push({
+          x: canvas.width / 2,
+          y: canvas.height / 2,
+          vx: (Math.random() - 0.5) * 12,
+          vy: (Math.random() - 0.5) * 12 - 3,
+          size: rand(4, 8),
+          color: colors[rand(0, colors.length - 1)],
+          alpha: 1
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let active = false;
+        particles.forEach(p => {
+          if (p.alpha > 0) {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.35;
+            p.alpha -= 0.02;
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = Math.max(0, p.alpha);
+            ctx.fillRect(p.x, p.y, p.size, p.size);
+            active = true;
+          }
+        });
+        if (active) requestAnimationFrame(draw);
+        else ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+      draw();
+    }
+
+    window.addEventListener('resize', () => {
+      updateDynamicSizes();
+    });
+
+    updateStatsDisplay();
+    generateRandomTask();
+  </script>
+</body>
+</html>
